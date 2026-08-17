@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weather App</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #74ebd5, #5c6bc0);
+            padding: 30px;
+        }
+
+        .weather-app {
+            width: 100%;
+            max-width: 650px;
+            padding: 35px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 40px;
+            margin-bottom: 8px;
+            color: #222;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-box button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            background: #5c6bc0;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .search-box button:hover {
+            background: #4654a8;
+        }
+
+        .weather-card {
+            padding: 30px;
+            background: #f5f7ff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .city-name {
+            font-size: 32px;
+            color: #222;
+            margin-bottom: 15px;
+        }
+
+        .weather-icon {
+            font-size: 70px;
+            margin: 10px 0;
+        }
+
+        .temperature {
+            font-size: 55px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .condition {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .detail {
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .detail-icon {
+            font-size: 28px;
+        }
+
+        .detail p {
+            color: #777;
+            margin: 7px 0;
+        }
+
+        .detail strong {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .forecast-title {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .forecast-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .forecast-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 12px 5px;
+        }
+
+        .forecast-day {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .forecast-icon {
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .forecast-temp {
+            font-size: 13px;
+        }
+
+        .error {
+            color: #e53935;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .weather-app {
+                padding: 25px 18px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-box button {
+                width: 100%;
+            }
+
+            .weather-details {
+                grid-template-columns: 1fr;
+            }
+
+            .forecast-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ===== WEATHER BACKGROUNDS ===== */
+
+body {
+    transition: background 0.6s ease;
+}
+
+body.weather-default {
+    background: linear-gradient(135deg, #74ebd5, #5c6bc0);
+}
+
+body.weather-clear {
+    background: linear-gradient(135deg, #56ccf2, #f2c94c);
+}
+
+body.weather-cloudy {
+    background: linear-gradient(135deg, #bdc3c7, #2c3e50);
+}
+
+body.weather-rain {
+    background: linear-gradient(135deg, #4b79a1, #283e51);
+}
+
+body.weather-drizzle {
+    background: linear-gradient(135deg, #89a9c9, #536976);
+}
+
+body.weather-snow {
+    background: linear-gradient(135deg, #e6f0f5, #b8c6db);
+}
+
+body.weather-storm {
+    background: linear-gradient(135deg, #232526, #414345);
+}
+
+body.weather-fog {
+    background: linear-gradient(135deg, #cfd9df, #8e9eab);
+}
+    </style>
+</head>
+
+<body class="weather-default">
+
+    <div class="weather-app">
+
+        <h1>Weather App</h1>
+
+        <p class="subtitle">
+            Check the current weather of any city
+        </p>
+
+        <form class="search-box" method="POST" id="weatherForm">
+
+    <input
+        type="text"
+        name="city"
+        id="cityInput"
+        placeholder="Enter city name"
+        required
+    >
+
+    <button type="submit">
+        Search
+    </button>
+
+    <button
+        type="button"
+        id="locationBtn"
+        onclick="getCurrentLocation()"
+    >
+        📍 My Location
+    </button>
+
+</form>
+        </form>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        {% if weather %}
+
+        <div class="weather-card">
+
+            <h2 class="city-name">
+                {{ weather.city }}
+            </h2>
+
+            <div class="weather-icon">
+                {{ weather.icon }}
+            </div>
+
+            <h3 class="temperature">
+                {{ weather.temperature }}°C
+            </h3>
+
+            <p class="condition">
+                {{ weather.condition }}
+            </p>
+
+            <div class="weather-details">
+
+                <div class="detail">
+
+                    <div class="detail-icon">💧</div>
+
+                    <p>Humidity</p>
+
+                    <strong>
+                        {{ weather.humidity }}%
+                    </strong>
+
+                </div>
+
+                <div class="detail">
+
+                    <div class="detail-icon">💨</div>
+
+                    <p>Wind Speed</p>
+
+                    <strong>
+                        {{ weather.wind }} km/h
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <h2 class="forecast-title">
+                7-Day Forecast
+            </h2>
+
+            <div class="forecast-container">
+
+                {% for day in weather.forecast %}
+
+                <div class="forecast-card">
+
+                    <div class="forecast-day">
+                        {{ day.day }}
+                    </div>
+
+                    <div class="forecast-icon">
+                        {{ day.icon }}
+                    </div>
+
+                    <div class="forecast-temp">
+                        <strong>{{ day.max }}°C</strong>
+                        /
+                        {{ day.min }}°C
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <script>
+
+function getCurrentLocation() {
+
+    const locationBtn = document.getElementById("locationBtn");
+    const cityInput = document.getElementById("cityInput");
+    const weatherForm = document.getElementById("weatherForm");
+
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+    }
+
+    locationBtn.textContent = "📍 Getting Location...";
+    locationBtn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+
+        async function(position) {
+
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            try {
+
+                const response = await fetch(
+                    `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Location service failed");
+                }
+
+                const data = await response.json();
+
+                const city =
+                    data.city ||
+                    data.locality ||
+                    data.principalSubdivision;
+
+                if (!city) {
+                    throw new Error("City not found");
+                }
+
+                cityInput.value = city;
+
+                weatherForm.submit();
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert("Unable to find your location.");
+
+                locationBtn.textContent = "📍 My Location";
+                locationBtn.disabled = false;
+            }
+        },
+
+        function(error) {
+
+            console.error(error);
+
+            if (error.code === 1) {
+                alert("Please allow location access.");
+            } else if (error.code === 2) {
+                alert("Your location could not be determined.");
+            } else if (error.code === 3) {
+                alert("Location request timed out.");
+            } else {
+                alert("Unable to get your location.");
+            }
+
+            locationBtn.textContent = "📍 My Location";
+            locationBtn.disabled = false;
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
+
+function changeWeatherBackground(condition) {
+
+    document.body.className = "weather-default";
+
+    if (condition === "Clear Sky") {
+        document.body.className = "weather-clear";
+    }
+
+    else if (condition === "Partly Cloudy") {
+        document.body.className = "weather-cloudy";
+    }
+
+    else if (condition === "Drizzle") {
+        document.body.className = "weather-drizzle";
+    }
+
+    else if (
+        condition === "Rain" ||
+        condition === "Rain Showers"
+    ) {
+        document.body.className = "weather-rain";
+    }
+
+    else if (condition === "Snow") {
+        document.body.className = "weather-snow";
+    }
+
+    else if (condition === "Thunderstorm") {
+        document.body.className = "weather-storm";
+    }
+
+    else if (condition === "Foggy") {
+        document.body.className = "weather-fog";
+    }
+}
+</script>
+
+<script>
+    const condition = "{{ weather.condition if weather else '' }}";
+
+    if (condition) {
+        changeWeatherBackground(condition);
+    }
+</script>
+
+</body>
+
+</html>
